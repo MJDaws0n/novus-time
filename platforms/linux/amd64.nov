@@ -1,21 +1,19 @@
 // ---------------------------------------------------------------------------
-// time/darwin_arm64 - time utilities for macOS Apple Silicon
+// time/linux_amd64 - time utilities for Linux x86_64
 // ---------------------------------------------------------------------------
 
-module time_darwin_arm64;
+module time_linux_amd64;
 
-import ../std;
 
 // ---------------------------------------------------------------------------
 // Sleep for a given number of milliseconds using poll(NULL, 0, ms)
-// (nanosleep does not exist as a macOS syscall)
 // ---------------------------------------------------------------------------
 
 fn sleep_ms(ms: i32) -> void {
-    mov(x0, 0);
-    mov(x1, 0);
-    mov(x2, ms);
-    mov(x16, 0x2000000 + 230);  // SYS_poll
+    mov(rax, 7);       // SYS_poll
+    mov(rdi, 0);       // NULL
+    mov(rsi, 0);       // nfds = 0
+    mov(rdx, ms);      // timeout_ms
     syscall();
 }
 

@@ -1,18 +1,12 @@
-// ---------------------------------------------------------------------------
-// time - time and sleep utilities
-//
-// Platform files: darwin_arm64, windows_amd64, windows_x86
-// Automatically selects the correct platform at compile time.
-// ---------------------------------------------------------------------------
-
+// Auto-generated platform dispatcher.
 module time_main;
 
 #if(os == "darwin") {
-    import darwin_arm64;
-}
-#if(os == "windows") {
-    import windows_amd64;
+    import platforms/darwin/arm64;
 }
 #if(os == "linux") {
-    import linux;
+    import platforms/linux/common;
+}
+#if(os == "windows") {
+    import platforms/windows/common;
 }

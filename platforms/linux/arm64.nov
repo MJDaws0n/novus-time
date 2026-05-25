@@ -1,20 +1,38 @@
 // ---------------------------------------------------------------------------
-// time/linux_amd64 - time utilities for Linux x86_64
+// time/linux_arm64 - time utilities for Linux ARM64 (aarch64)
+// Uses nanosleep (syscall 101) instead of poll for sleep
 // ---------------------------------------------------------------------------
 
-module time_linux_amd64;
+module time_linux_arm64;
 
-import ../std;
 
 // ---------------------------------------------------------------------------
-// Sleep for a given number of milliseconds using poll(NULL, 0, ms)
+// Helper: build a timespec struct for nanosleep
+// ---------------------------------------------------------------------------
+
+fn to_u8_time(v: i32) -> i32 {
+    return ((v % 256) + 256) % 256;
+}
+
+// ---------------------------------------------------------------------------
+// Sleep for a given number of milliseconds using nanosleep
 // ---------------------------------------------------------------------------
 
 fn sleep_ms(ms: i32) -> void {
-    mov(rax, 7);       // SYS_poll
-    mov(rdi, 0);       // NULL
-    mov(rsi, 0);       // nfds = 0
-    mov(rdx, ms);      // timeout_ms
+    let sec: i32 = ms / 1000;
+    let nsec: i32 = (ms % 1000) * 1000000;
+    let ts: str = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+    ts[0] = to_u8_time(sec % 256);
+    ts[1] = to_u8_time((sec / 256) % 256);
+    ts[2] = to_u8_time((sec / 65536) % 256);
+    ts[3] = to_u8_time((sec / 16777216) % 256);
+    ts[8] = to_u8_time(nsec % 256);
+    ts[9] = to_u8_time((nsec / 256) % 256);
+    ts[10] = to_u8_time((nsec / 65536) % 256);
+    ts[11] = to_u8_time((nsec / 16777216) % 256);
+    mov(x0, ts);
+    mov(x1, 0);        // rem = NULL
+    mov(x8, 101);      // SYS_nanosleep
     syscall();
 }
 
